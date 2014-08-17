@@ -80,6 +80,24 @@
 			<version>10.10.2.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.atomikos</groupId>
+			<artifactId>transactions-jta</artifactId>
+			<version>3.9.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.atomikos</groupId>
+			<artifactId>transactions-jdbc</artifactId>
+			<version>3.9.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.atomikos</groupId>
+			<artifactId>transactions-hibernate3</artifactId>
+			<version>3.9.3</version>
+		</dependency>
+
 
 		<!-- Logging with SLF4J & LogBack -->
 		<dependency>
