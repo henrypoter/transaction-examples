@@ -1,8 +1,12 @@
 package transactions.xa;
 
-import org.jboss.logging.Logger;
+import javax.persistence.PersistenceException;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -16,7 +20,7 @@ import transactions.jpa.entity.InvestmentAccount;
 @EnableTransactionManagement
 public class XATransactionsTest {
 
-	private static final Logger logger = Logger
+	private static final Logger logger = LoggerFactory
 			.getLogger(XATransactionsTest.class);
 
 	@Autowired
@@ -29,11 +33,23 @@ public class XATransactionsTest {
 	private InvestmentAccountDao investmentAccountDao;
 
 	@Test
-	public void test() {
+	public void testBothEntityShouldBeInserted() {
 		interAccountService.save(new BankAccount(), new InvestmentAccount());
-		logger.info("Bank accounts: " + bankAccountDao.getAllCount());
-		logger.info("Investment accounts: "
-				+ investmentAccountDao.getAllCount());
+		Assert.assertEquals(1, bankAccountDao.getAllCount().intValue());
+		Assert.assertEquals(1, investmentAccountDao.getAllCount().intValue());
+	}
+
+	@Test
+	public void testBothEntityShouldNotBeInserted() {
+		try {
+			interAccountService.save(new BankAccount(), new InvestmentAccount(
+					"moreThanEightCharacters"));
+			Assert.fail();
+		} catch (PersistenceException e) {
+			Assert.assertEquals(0, bankAccountDao.getAllCount().intValue());
+			Assert.assertEquals(0, investmentAccountDao.getAllCount()
+					.intValue());
+		}
 	}
 
 }
