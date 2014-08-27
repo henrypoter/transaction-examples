@@ -3,11 +3,12 @@ package transactions.jpa;
 import javax.transaction.SystemException;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.IllegalTransactionStateException;
@@ -18,6 +19,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:jpa-context.xml" })
 @EnableTransactionManagement
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class PropagationLevelTest {
 
 	@Autowired
@@ -25,11 +27,6 @@ public class PropagationLevelTest {
 
 	@Autowired
 	private JpaTransactionManager transactionManager;
-
-	@Before
-	public void setUp() {
-		bookingService.emptySchema();
-	}
 
 	@Test
 	public void testInserting() {

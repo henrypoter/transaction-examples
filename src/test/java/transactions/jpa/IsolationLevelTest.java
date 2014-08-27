@@ -1,10 +1,11 @@
 package transactions.jpa;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -12,15 +13,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:jpa-context.xml" })
 @EnableTransactionManagement
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class IsolationLevelTest {
 
 	@Autowired
 	private BookingService bookingService;
-
-	@Before
-	public void setUp() {
-		bookingService.emptySchema();
-	}
 
 	@Test
 	public void insertValidBookingsExpectedToBeSuccesful() {

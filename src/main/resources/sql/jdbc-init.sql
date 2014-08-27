@@ -1,0 +1,1 @@
+create table bookings(FIRST_NAME varchar(5) NOT NULL);

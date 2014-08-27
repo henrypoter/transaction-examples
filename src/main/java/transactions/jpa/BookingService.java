@@ -5,17 +5,14 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import transactions.jpa.entity.Booking;
 
@@ -26,21 +23,7 @@ public class BookingService {
 	private EntityManager entityManager;
 
 	@Autowired
-	private ValidityChecker validityChecker;
-
-	@Autowired
 	private JpaTransactionManager transactionManager;
-
-	@Transactional
-	public void emptySchema() {
-		Query deleteQuery = entityManager.createQuery("delete from Booking");
-		deleteQuery.executeUpdate();
-	}
-
-	@Transactional
-	public void empty() {
-		entityManager.clear();
-	}
 
 	@Transactional
 	public void insertBookings(String... bookings) {
@@ -70,14 +53,10 @@ public class BookingService {
 
 	@Transactional(propagation = Propagation.NEVER)
 	public void insertBookingsWithNeverPropagation(String... bookings) {
-		TransactionStatus status = transactionManager
-				.getTransaction(new DefaultTransactionDefinition());
-		System.out.println("Completed: " + status.isCompleted());
 		insertMultipleBookings(bookings);
 	}
 
 	public List<String> findAllBookings() {
-		entityManager.getEntityManagerFactory().getProperties();
 		List<String> result = new ArrayList<String>();
 		TypedQuery<Booking> query = entityManager.createQuery("from Booking",
 				Booking.class);

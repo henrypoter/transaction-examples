@@ -3,7 +3,8 @@ package transactions.xa;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import transactions.jpa.entity.InvestmentAccount;
@@ -11,14 +12,14 @@ import transactions.jpa.entity.InvestmentAccount;
 @Service
 public class InvestmentAccountDao {
 
-	private static final Logger logger = Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(InvestmentAccountDao.class);
 
 	@PersistenceContext(unitName = "investmentPersistenceUnit")
 	private EntityManager entityManager;
 
 	public void save(InvestmentAccount investmentAccount) {
-		logger.info("inserting investment account");
+		LOGGER.info("inserting investment account");
 		entityManager.persist(investmentAccount);
 	}
 

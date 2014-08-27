@@ -11,9 +11,14 @@
 		http://www.springframework.org/schema/tx
         http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+	<import resource="classpath:xa-investment-context.xml" />
+	<import resource="classpath:xa-bank-context.xml" />
+
 	<tx:annotation-driven />
 
 	<tx:jta-transaction-manager />
+
+	<context:component-scan base-package="transactions.xa" />
 
 	<bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager"
 		init-method="init" destroy-method="close">
@@ -29,85 +34,5 @@
 		<property name="transactionManager" ref="atomikosTransactionManager" />
 		<property name="userTransaction" ref="atomikosUserTransaction" />
 	</bean>
-
-	<bean id="bankEntityManagerFactory"
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-		<property name="dataSource" ref="bankDataSource" />
-		<property name="packagesToScan" value="transactions.jpa.entity" />
-		<property name="persistenceUnitName" value="bankPersistenceUnit" />
-		<property name="jpaProperties">
-			<props>
-				<prop key="hibernate.hbm2ddl.auto">create-drop</prop>
-			</props>
-		</property>
-		<property name="jpaVendorAdapter">
-			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-				<property name="generateDdl" value="true" />
-				<property name="showSql" value="true" />
-			</bean>
-		</property>
-	</bean>
-
-	<bean id="investmentEntityManagerFactory"
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-		<property name="dataSource" ref="investmentDataSource" />
-		<property name="packagesToScan" value="transactions.jpa.entity" />
-		<property name="persistenceUnitName" value="investmentPersistenceUnit" />
-		<property name="jpaProperties">
-			<props>
-				<prop key="hibernate.hbm2ddl.auto">create-drop</prop>
-			</props>
-		</property>
-		<property name="jpaVendorAdapter">
-			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-				<property name="generateDdl" value="true" />
-				<property name="showSql" value="true" />
-			</bean>
-		</property>
-	</bean>
-
-	<bean id="bankDataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean"
-		init-method="init" destroy-method="close" depends-on="bankDatabase">
-		<property name="uniqueResourceName" value="bankDataSource" />
-		<property name="poolSize" value="3" />
-		<property name="xaDataSource" value="#{bankDatabase.xaDataSource}" />
-	</bean>
-
-	<bean id="investmentDataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean"
-		init-method="init" destroy-method="close">
-		<property name="uniqueResourceName" value="investmentDataSource" />
-		<property name="poolSize" value="3" />
-		<property name="xaDataSource" value="#{investmentDatabase.xaDataSource}" />
-	</bean>
-
-	<bean id="bankDatabase" class="com.atomikos.jdbc.AtomikosDataSourceBean"
-		init-method="init" destroy-method="close">
-		<property name="xaDataSourceClassName" value="org.apache.derby.jdbc.EmbeddedXADataSource" />
-		<property name="uniqueResourceName" value="bankDatabase" />
-		<property name="minPoolSize" value="1" />
-		<property name="maxPoolSize" value="5" />
-		<property name="xaProperties">
-			<props>
-				<prop key="databaseName">/tmp/bankDatabase</prop>
-				<prop key="connectionAttributes">create=true</prop>
-			</props>
-		</property>
-	</bean>
-
-	<bean id="investmentDatabase" class="com.atomikos.jdbc.AtomikosDataSourceBean"
-		init-method="init" destroy-method="close">
-		<property name="xaDataSourceClassName" value="org.apache.derby.jdbc.EmbeddedXADataSource" />
-		<property name="uniqueResourceName" value="investmentDatabase" />
-		<property name="minPoolSize" value="1" />
-		<property name="maxPoolSize" value="5" />
-		<property name="xaProperties">
-			<props>
-				<prop key="databaseName">/tmp/investmentDatabase</prop>
-				<prop key="connectionAttributes">create=true</prop>
-			</props>
-		</property>
-	</bean>
-
-	<context:component-scan base-package="transactions.xa" />
 
 </beans>

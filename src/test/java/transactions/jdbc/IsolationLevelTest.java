@@ -1,11 +1,13 @@
 package transactions.jdbc;
 
-import org.jboss.logging.Logger;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -13,21 +15,16 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:jdbc-context.xml" })
 @EnableTransactionManagement
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class IsolationLevelTest {
 
-	private static final Logger logger = Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(IsolationLevelTest.class);
 
 	@Autowired
 	private BookingService bookingService;
 
 	private boolean readUnCommitted;
-
-	@Before
-	public void cleanup() {
-		bookingService.createSchema();
-		readUnCommitted = false;
-	}
 
 	@Test
 	public void testReadUnComittedShouldBeFalse() {
@@ -72,7 +69,7 @@ public class IsolationLevelTest {
 				int size = bookingService.findAllBookings().size();
 				while (size < 3) {
 					size = bookingService.findAllBookings().size();
-					logger.info("In thread:" + size);
+					LOGGER.info("In thread:" + size);
 					if (0 < size && size < 3) {
 						readUnCommitted = true;
 					}
@@ -91,7 +88,7 @@ public class IsolationLevelTest {
 				while (size < 3) {
 					size = bookingService.findAllBookingsReadUnCommitted()
 							.size();
-					logger.info("In thread:" + size);
+					LOGGER.info("In thread:" + size);
 					if (0 < size && size < 3) {
 						readUnCommitted = true;
 					}
@@ -111,7 +108,7 @@ public class IsolationLevelTest {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				logger.info("insert running");
+				LOGGER.info("insert running");
 				bookingService.insertBookings("book1");
 			}
 		};
