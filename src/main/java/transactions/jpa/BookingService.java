@@ -1,83 +1,67 @@
 package transactions.jpa;
 
-import java.util.ArrayList;
-import java.util.List;
+public interface BookingService {
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+	/**
+	 * Inserts booking into database.
+	 * 
+	 * @param bookings
+	 *            - the bookings to be inserted.
+	 */
+	void insertBookings(String... bookings);
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+	/**
+	 * Inserts booking into database with REQUIRED propagation mode.
+	 * 
+	 * @param bookings
+	 *            - the bookings to be inserted.
+	 */
+	void insertBookingsWithRequiredPropagation(String... bookings);
 
-import transactions.jpa.entity.Booking;
+	/**
+	 * Inserts booking into database with REQUIRES_NEW propagation mode.
+	 * 
+	 * @param bookings
+	 *            - the bookings to be inserted.
+	 */
+	void insertBookingsWithRequiresNewPropagation(String... bookings);
 
-@Service
-public class BookingService {
+	/**
+	 * Inserts booking into database with NESTED propagation mode.
+	 * 
+	 * @param bookings
+	 *            - the bookings to be inserted.
+	 */
+	void insertBookingsWithNestedPropagation(String... bookings);
 
-	@PersistenceContext
-	private EntityManager entityManager;
+	/**
+	 * Inserts booking into database with MANDATORY propagation mode.
+	 * 
+	 * @param bookings
+	 *            - the bookings to be inserted.
+	 */
+	void insertBookingsWithMandatoryPropagation(String... bookings);
 
-	@Autowired
-	private JpaTransactionManager transactionManager;
+	/**
+	 * Inserts booking into database with NEVER propagation mode.
+	 * 
+	 * @param bookings
+	 *            - the bookings to be inserted.
+	 */
+	void insertBookingsWithNeverPropagation(String... bookings);
 
-	@Transactional
-	public void insertBookings(String... bookings) {
-		insertMultipleBookings(bookings);
-	}
+	/**
+	 * counts all the bookings.
+	 * 
+	 * @return - the number of bookings.
+	 */
+	long countAllBookings();
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void insertBookingsWithRequiredPropagation(String... bookings) {
-		insertMultipleBookings(bookings);
-
-	}
-
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void insertBookingsWithRequiresNewPropagation(String... bookings) {
-		insertMultipleBookings(bookings);
-	}
-
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void insertBookingsWithNestedPropagation(String... bookings) {
-		insertMultipleBookings(bookings);
-	}
-
-	@Transactional(propagation = Propagation.MANDATORY)
-	public void insertBookingsWithMandatoryPropagation(String... bookings) {
-		insertMultipleBookings(bookings);
-	}
-
-	@Transactional(propagation = Propagation.NEVER)
-	public void insertBookingsWithNeverPropagation(String... bookings) {
-		insertMultipleBookings(bookings);
-	}
-
-	public List<String> findAllBookings() {
-		List<String> result = new ArrayList<String>();
-		TypedQuery<Booking> query = entityManager.createQuery("from Booking",
-				Booking.class);
-		List<Booking> bookings = query.getResultList();
-		for (Booking booking : bookings) {
-			result.add(booking.getName());
-		}
-		return result;
-
-	}
-
-	@Transactional(isolation = Isolation.READ_UNCOMMITTED)
-	public List<String> findAllBookingsReadUncommited() {
-		return findAllBookings();
-	}
-
-	private void insertMultipleBookings(String... bookings) {
-		for (String booking : bookings) {
-			Booking persistedBooking = new Booking(booking);
-			entityManager.persist(persistedBooking);
-		}
-	}
+	/**
+	 * counts all the bookings including inserted but not committed ones.
+	 * 
+	 * @return - the number of bookings.
+	 */
+	long countAllBookingsReadUncommited();
 
 }

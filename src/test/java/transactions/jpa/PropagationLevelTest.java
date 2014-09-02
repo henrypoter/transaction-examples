@@ -29,46 +29,47 @@ public class PropagationLevelTest {
 	private JpaTransactionManager transactionManager;
 
 	@Test
-	public void testInserting() {
+	public void oneBookingShouldBeInserted() {
 		bookingService.insertBookings("User 1");
-		Assert.assertEquals(1, bookingService.findAllBookings().size());
+		Assert.assertEquals(1, bookingService.countAllBookings());
 	}
 
 	@Test
-	public void testEmpty() {
-		Assert.assertEquals(0, bookingService.findAllBookings().size());
+	public void bookingTableShouldBeEmpty() {
+		Assert.assertEquals(0, bookingService.countAllBookings());
 	}
 
 	@Test
-	public void testPropagationRequired() throws SystemException {
+	public void noBookingShouldBeInsertedWhenOuterTransactionIsRolledBackAndPropagationModeIsRequired()
+			throws SystemException {
 		TransactionStatus status = transactionManager
 				.getTransaction(new DefaultTransactionDefinition());
 		bookingService.insertBookingsWithRequiredPropagation("User 1");
 		transactionManager.rollback(status);
-		Assert.assertEquals(0, bookingService.findAllBookings().size());
+		Assert.assertEquals(0, bookingService.countAllBookings());
 
 	}
 
 	@Test
-	public void testPropagationRequiresNew() {
+	public void bookingShouldBeInsertedWhenOuterTransactionIsRolledBackAndPropagationModeIsRequiresNew() {
 		TransactionStatus status = transactionManager
 				.getTransaction(new DefaultTransactionDefinition());
 		bookingService.insertBookingsWithRequiresNewPropagation("User 1");
 		transactionManager.rollback(status);
-		Assert.assertEquals(1, bookingService.findAllBookings().size());
+		Assert.assertEquals(1, bookingService.countAllBookings());
 	}
 
 	@Test
-	public void testPropagationNested() {
+	public void noBookingShouldBeInsertedWhenOuterTransactionIsRolledBackAndPropagationModeIsNested() {
 		TransactionStatus status = transactionManager
 				.getTransaction(new DefaultTransactionDefinition());
 		bookingService.insertBookingsWithNestedPropagation("User 1");
 		transactionManager.rollback(status);
-		Assert.assertEquals(0, bookingService.findAllBookings().size());
+		Assert.assertEquals(0, bookingService.countAllBookings());
 	}
 
 	@Test(expected = IllegalTransactionStateException.class)
-	public void testPropagationMandatory() {
+	public void exceptionShouldBeThrownWhenThereIsNoActiveTransactionAndPropagationModeIsMandatory() {
 		TransactionStatus status = transactionManager
 				.getTransaction(new DefaultTransactionDefinition());
 		transactionManager.commit(status);
@@ -76,16 +77,16 @@ public class PropagationLevelTest {
 	}
 
 	@Test
-	public void testPropagationMandatorySuccess() {
+	public void noExceptionShouldBeThrownWhenThereIsActiveTransactionAndPropagationModeIsMandatory() {
 		TransactionStatus status = transactionManager
 				.getTransaction(new DefaultTransactionDefinition());
 		bookingService.insertBookingsWithMandatoryPropagation("User 1");
 		transactionManager.rollback(status);
-		Assert.assertEquals(0, bookingService.findAllBookings().size());
+		Assert.assertEquals(0, bookingService.countAllBookings());
 	}
 
 	@Test
-	public void testPropagationNever() {
+	public void exceptionShouldBeThrownWhenThereIsActiveTransactionAndPropagationModeIsNever() {
 		TransactionStatus status = transactionManager
 				.getTransaction(new DefaultTransactionDefinition());
 		try {

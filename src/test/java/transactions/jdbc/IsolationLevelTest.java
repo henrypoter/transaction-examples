@@ -12,6 +12,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import util.SleepUtil;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:jdbc-context.xml" })
 @EnableTransactionManagement
@@ -27,25 +29,25 @@ public class IsolationLevelTest {
 	private boolean readUnCommitted;
 
 	@Test
-	public void testReadUnComittedShouldBeFalse() {
+	public void readUnComittedShouldBeFalseWhenNoReadingUncomittedMethodIsUsed() {
 		Runnable checker = getConcurrentChecker();
 		new Thread(checker).start();
 		bookingService.insertBookings("book1", "book2", "book3");
-		Assert.assertEquals(3, bookingService.findAllBookings().size());
+		Assert.assertEquals(3, bookingService.countAllBookings());
 		Assert.assertFalse(readUnCommitted);
 	}
 
 	@Test
-	public void testReadUnComittedShouldBeTrue() {
+	public void readUnComittedShouldBeTrueWhenReadingUncomittedMethodIsUsed() {
 		Runnable checker = getConcurrentCheckerReadUncommitted();
 		new Thread(checker).start();
 		bookingService.insertBookings("book1", "book2", "book3");
-		Assert.assertEquals(3, bookingService.findAllBookings().size());
+		Assert.assertEquals(3, bookingService.countAllBookings());
 		Assert.assertTrue(readUnCommitted);
 	}
 
 	@Test
-	public void testRepeatableReadShouldGiveDifferentResultWhileInserting() {
+	public void repeatableReadShouldGiveDifferentResultWhenRepeatableReadIsUsed() {
 		Runnable concurrentInsert = getConcurrentInsert();
 		new Thread(concurrentInsert).start();
 		int difference = bookingService
@@ -54,7 +56,7 @@ public class IsolationLevelTest {
 	}
 
 	@Test
-	public void testRepeatableReadShouldGiveSameResultWhileInserting() {
+	public void testRepeatableReadShouldGiveSameResultWhenSerializableReadIsUsed() {
 		Runnable concurrentInsert = getConcurrentInsert();
 		new Thread(concurrentInsert).start();
 		int difference = bookingService
@@ -66,9 +68,9 @@ public class IsolationLevelTest {
 		Runnable checker = new Runnable() {
 			@Override
 			public void run() {
-				int size = bookingService.findAllBookings().size();
+				int size = bookingService.countAllBookings();
 				while (size < 3) {
-					size = bookingService.findAllBookings().size();
+					size = bookingService.countAllBookings();
 					LOGGER.info("In thread:" + size);
 					if (0 < size && size < 3) {
 						readUnCommitted = true;
@@ -83,11 +85,9 @@ public class IsolationLevelTest {
 		Runnable checker = new Runnable() {
 			@Override
 			public void run() {
-				int size = bookingService.findAllBookingsReadUnCommitted()
-						.size();
+				int size = bookingService.countAllBookingsReadUnCommitted();
 				while (size < 3) {
-					size = bookingService.findAllBookingsReadUnCommitted()
-							.size();
+					size = bookingService.countAllBookingsReadUnCommitted();
 					LOGGER.info("In thread:" + size);
 					if (0 < size && size < 3) {
 						readUnCommitted = true;
@@ -102,12 +102,7 @@ public class IsolationLevelTest {
 		Runnable insert = new Runnable() {
 			@Override
 			public void run() {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				SleepUtil.sleep(1000);
 				LOGGER.info("insert running");
 				bookingService.insertBookings("book1");
 			}

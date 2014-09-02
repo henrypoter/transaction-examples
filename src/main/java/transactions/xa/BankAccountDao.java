@@ -7,10 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import transactions.jpa.entity.BankAccount;
+import transactions.jpa.entity.Account;
 
 @Service
-public class BankAccountDao {
+public class BankAccountDao implements AccountDao {
 
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(BankAccountDao.class);
@@ -18,11 +18,18 @@ public class BankAccountDao {
 	@PersistenceContext(unitName = "bankPersistenceUnit")
 	private EntityManager entityManager;
 
-	public void save(BankAccount bankAccount) {
+	@Override
+	public void save(Account bankAccount) {
 		LOGGER.info("inserting bank account");
 		entityManager.persist(bankAccount);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see transactions.xa.AccountDao#getAllCount()
+	 */
+	@Override
 	public Integer getAllCount() {
 		return entityManager.createQuery("from BankAccount").getResultList()
 				.size();

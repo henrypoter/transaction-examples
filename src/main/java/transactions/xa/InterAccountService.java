@@ -11,7 +11,7 @@ import transactions.jpa.entity.InvestmentAccount;
 public class InterAccountService {
 
 	@Autowired
-	private BankAccountDao bankAccountDao;
+	private AccountDao bankAccountDao;
 
 	@Autowired
 	private InvestmentAccountDao investmentAccountDao;

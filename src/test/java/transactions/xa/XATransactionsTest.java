@@ -25,20 +25,20 @@ public class XATransactionsTest {
 	private InterAccountService interAccountService;
 
 	@Autowired
-	private BankAccountDao bankAccountDao;
+	private AccountDao bankAccountDao;
 
 	@Autowired
 	private InvestmentAccountDao investmentAccountDao;
 
 	@Test
-	public void testBothEntityShouldBeInserted() {
+	public void bothEntityShouldBeInserted() {
 		interAccountService.save(new BankAccount(), new InvestmentAccount());
 		Assert.assertEquals(1, bankAccountDao.getAllCount().intValue());
 		Assert.assertEquals(1, investmentAccountDao.getAllCount().intValue());
 	}
 
 	@Test
-	public void testBothEntityShouldNotBeInserted() {
+	public void bothEntityShouldNotBeInserted() {
 		try {
 			interAccountService.save(new BankAccount(), new InvestmentAccount(
 					"moreThanEightCharacters"));

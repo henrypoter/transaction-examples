@@ -1,81 +1,43 @@
 package transactions.jdbc;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
+public interface BookingService {
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+	/**
+	 * Inserts booking into database.
+	 * 
+	 * @param bookings
+	 *            - the books to be inserted.
+	 */
+	void insertBookings(String... bookings);
 
-@Service
-public class BookingService {
+	/**
+	 * counts all the bookings.
+	 * 
+	 * @return - the number of bookings.
+	 */
+	int countAllBookings();
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	/**
+	 * counts all the bookings including inserted but not committed ones.
+	 * 
+	 * @return - the number of bookings.
+	 */
+	int countAllBookingsReadUnCommitted();
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(BookingService.class);
+	/**
+	 * Reads the booking counts two times with repeatable isolation and
+	 * subtracts the results.
+	 * 
+	 * @return - the difference.
+	 */
+	int differenceBetweenFirstAndSeconFindRepeatableRead();
 
-	@Transactional
-	public void insertBookings(String... bookings) {
-		for (String booking : bookings) {
-			LOGGER.info("inserting booking: " + booking);
-			jdbcTemplate.update("insert into bookings(FIRST_NAME) values (?)",
-					booking);
-			sleep(1000);
-		}
-	}
-
-	@Transactional(isolation = Isolation.READ_COMMITTED)
-	public List<String> findAllBookings() {
-		return find();
-	}
-
-	@Transactional(isolation = Isolation.READ_UNCOMMITTED)
-	public List<String> findAllBookingsReadUnCommitted() {
-		return find();
-	}
-
-	@Transactional(isolation = Isolation.REPEATABLE_READ)
-	public int differenceBetweenFirstAndSeconFindRepeatableRead() {
-		List<String> first = find();
-		sleep(2000);
-		List<String> second = find();
-		return first.size() - second.size();
-	}
-
-	@Transactional(isolation = Isolation.SERIALIZABLE)
-	public int differenceBetweenFirstAndSeconFindSerializable() {
-		List<String> first = find();
-		sleep(2000);
-		List<String> second = find();
-		return first.size() - second.size();
-	}
-
-	private List<String> find() {
-		RowMapper<String> rowMapper = new RowMapper<String>() {
-			@Override
-			public String mapRow(ResultSet resultSet, int rowNumber)
-					throws SQLException {
-				return resultSet.getString("FIRST_NAME");
-			}
-		};
-		LOGGER.info("finding bookings");
-		return jdbcTemplate.query("select FIRST_NAME from bookings", rowMapper);
-	}
-
-	private void sleep(long m) {
-		try {
-			Thread.sleep(m);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+	/**
+	 * Reads the booking counts two times with serializable isolation and
+	 * subtracts the results.
+	 * 
+	 * @return - the difference.
+	 */
+	int differenceBetweenFirstAndSeconFindSerializable();
 
 }
