@@ -12,27 +12,25 @@ import transactions.jpa.entity.Account;
 @Service
 public class BankAccountDao implements AccountDao {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(BankAccountDao.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BankAccountDao.class);
 
-	@PersistenceContext(unitName = "bankPersistenceUnit")
-	private EntityManager entityManager;
+    @PersistenceContext(unitName = "bankPersistenceUnit")
+    private EntityManager entityManager;
 
-	@Override
-	public void save(Account bankAccount) {
-		LOGGER.info("inserting bank account");
-		entityManager.persist(bankAccount);
-	}
+    @Override
+    public void save(Account bankAccount) {
+        LOGGER.info("inserting bank account");
+        entityManager.persist(bankAccount);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see transactions.xa.AccountDao#getAllCount()
-	 */
-	@Override
-	public Integer getAllCount() {
-		return entityManager.createQuery("from BankAccount").getResultList()
-				.size();
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see transactions.xa.AccountDao#getAllCount()
+     */
+    @Override
+    public long getAllCount() {
+        return (long) entityManager.createQuery("select count(ba.id) from BankAccount ba").getSingleResult();
+    }
 
 }

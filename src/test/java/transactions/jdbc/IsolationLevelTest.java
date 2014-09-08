@@ -15,99 +15,77 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import util.SleepUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:jdbc-context.xml" })
+@ContextConfiguration(locations = {"classpath:jdbc-context.xml"})
 @EnableTransactionManagement
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class IsolationLevelTest {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(IsolationLevelTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IsolationLevelTest.class);
 
-	@Autowired
-	private BookingService bookingService;
+    @Autowired
+    private JDBCBookingService bookingService;
 
-	private boolean readUnCommitted;
+    private boolean readUnCommitted;
 
-	@Test
-	public void readUnComittedShouldBeFalseWhenNoReadingUncomittedMethodIsUsed() {
-		Runnable checker = getConcurrentChecker();
-		new Thread(checker).start();
-		bookingService.insertBookings("book1", "book2", "book3");
-		Assert.assertEquals(3, bookingService.countAllBookings());
-		Assert.assertFalse(readUnCommitted);
-	}
+    @Test
+    public void givenInsertingWhenNoReadingUncomittedMethodIsUsedThenReadUnComittedShouldBeFalse() {
+        startConcurrentChecker(false);
+        bookingService.insertBookings("book1", "book2", "book3");
+        Assert.assertEquals(3, bookingService.countAllBookings());
+        Assert.assertFalse(readUnCommitted);
+    }
 
-	@Test
-	public void readUnComittedShouldBeTrueWhenReadingUncomittedMethodIsUsed() {
-		Runnable checker = getConcurrentCheckerReadUncommitted();
-		new Thread(checker).start();
-		bookingService.insertBookings("book1", "book2", "book3");
-		Assert.assertEquals(3, bookingService.countAllBookings());
-		Assert.assertTrue(readUnCommitted);
-	}
+    @Test
+    public void givenInsertingWhenReadingUncomittedMethodIsUsedThenReadUnComittedShouldBeTrue() {
+        startConcurrentChecker(true);
+        bookingService.insertBookings("book1", "book2", "book3");
+        Assert.assertEquals(3, bookingService.countAllBookings());
+        Assert.assertTrue(readUnCommitted);
+    }
 
-	@Test
-	public void repeatableReadShouldGiveDifferentResultWhenRepeatableReadIsUsed() {
-		Runnable concurrentInsert = getConcurrentInsert();
-		new Thread(concurrentInsert).start();
-		int difference = bookingService
-				.differenceBetweenFirstAndSeconFindRepeatableRead();
-		Assert.assertEquals(-1, difference);
-	}
+    @Test
+    public void givenInsertingWhenRepeatableReadIsUsedThenRepeatableReadShouldGiveDifferentResult() {
+        startConcurrentInsert();
+        int difference = bookingService.differenceBetweenFirstAndSeconFindRepeatableRead();
+        Assert.assertEquals(-1, difference);
+    }
 
-	@Test
-	public void testRepeatableReadShouldGiveSameResultWhenSerializableReadIsUsed() {
-		Runnable concurrentInsert = getConcurrentInsert();
-		new Thread(concurrentInsert).start();
-		int difference = bookingService
-				.differenceBetweenFirstAndSeconFindSerializable();
-		Assert.assertEquals(0, difference);
-	}
+    @Test
+    public void givenInsertingWhenSerializableReadIsUsedThenRepeatableReadShouldGiveSameResult() {
+        startConcurrentInsert();
+        int difference = bookingService.differenceBetweenFirstAndSeconFindSerializable();
+        Assert.assertEquals(0, difference);
+    }
 
-	private Runnable getConcurrentChecker() {
-		Runnable checker = new Runnable() {
-			@Override
-			public void run() {
-				int size = bookingService.countAllBookings();
-				while (size < 3) {
-					size = bookingService.countAllBookings();
-					LOGGER.info("In thread:" + size);
-					if (0 < size && size < 3) {
-						readUnCommitted = true;
-					}
-				}
-			}
-		};
-		return checker;
-	}
+    private void startConcurrentChecker(final boolean checkReadUnCommitted) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int size = countAllBookings(checkReadUnCommitted);
+                while (size < 3) {
+                    size = countAllBookings(checkReadUnCommitted);
+                    LOGGER.info("In thread:" + size);
+                    if (0 < size && size < 3) {
+                        readUnCommitted = true;
+                    }
+                }
+            }
+        }).start();
+    }
 
-	private Runnable getConcurrentCheckerReadUncommitted() {
-		Runnable checker = new Runnable() {
-			@Override
-			public void run() {
-				int size = bookingService.countAllBookingsReadUnCommitted();
-				while (size < 3) {
-					size = bookingService.countAllBookingsReadUnCommitted();
-					LOGGER.info("In thread:" + size);
-					if (0 < size && size < 3) {
-						readUnCommitted = true;
-					}
-				}
-			}
-		};
-		return checker;
-	}
+    private int countAllBookings(final boolean checkReadUnCommitted) {
+        return checkReadUnCommitted ? bookingService.countAllBookingsReadUnCommitted() : bookingService.countAllBookings();
+    }
 
-	private Runnable getConcurrentInsert() {
-		Runnable insert = new Runnable() {
-			@Override
-			public void run() {
-				SleepUtil.sleep(1000);
-				LOGGER.info("insert running");
-				bookingService.insertBookings("book1");
-			}
-		};
-		return insert;
-	}
+    private void startConcurrentInsert() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SleepUtil.sleep(1000);
+                LOGGER.info("insert running");
+                bookingService.insertBookings("book1");
+            }
+        }).start();
+    }
 
 }

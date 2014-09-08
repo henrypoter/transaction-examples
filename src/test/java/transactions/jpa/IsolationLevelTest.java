@@ -15,54 +15,49 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import util.SleepUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:jpa-context.xml" })
+@ContextConfiguration(locations = {"classpath:jpa-context.xml"})
 @EnableTransactionManagement
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class IsolationLevelTest {
 
-	@Autowired
-	private BookingService bookingService;
+    @Autowired
+    private JPABookingService bookingService;
 
-	private boolean hasException;
+    private boolean hasException;
 
-	@Before
-	public void before() {
-		hasException = false;
-	}
+    @Before
+    public void before() {
+        hasException = false;
+    }
 
-	@Test
-	public void insertValidBookingShouldBeSuccesful() {
-		bookingService.insertBookings("User1", "User2", "User3");
-		Assert.assertEquals(3, bookingService.countAllBookings());
-	}
+    @Test
+    public void givenInsertingWhenDefaultIsolationIsActiveThenNoExceptionShouldBeThrown() {
+        bookingService.insertBookings("User1", "User2", "User3");
+        Assert.assertEquals(3, bookingService.countAllBookings());
+    }
 
-	@Test
-	public void callingMethodWithReadUncommitedIsolationLevelShouldThrowException()
-			throws InterruptedException {
-		Runnable checker = getConcurrentCheckerReadUncommited();
-		Thread checkerThread = new Thread(checker);
-		checkerThread.start();
-		bookingService.insertBookings("User1", "User2", "User3");
-		checkerThread.join();
-		Assert.assertTrue(hasException);
-	}
+    @Test
+    public void givenInsertingWhenMethodWithReadUncommitedIsolationLevelCalledThenExceptionShouldBeThrown() throws InterruptedException {
+        startConcurrentCheckerReadUncommited();
+        bookingService.insertBookings("User1", "User2", "User3");
+        Assert.assertTrue(hasException);
+    }
 
-	private Runnable getConcurrentCheckerReadUncommited() {
-		Runnable checker = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					long size = bookingService.countAllBookingsReadUncommited();
-					while (size < 3) {
-						SleepUtil.sleep(100);
-						size = bookingService.countAllBookingsReadUncommited();
-					}
-				} catch (InvalidIsolationLevelException e) {
-					hasException = true;
-				}
-			}
-		};
-		return checker;
-	}
+    private void startConcurrentCheckerReadUncommited() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long size = bookingService.countAllBookingsReadUncommited();
+                    while (size < 3) {
+                        SleepUtil.sleep(100);
+                        size = bookingService.countAllBookingsReadUncommited();
+                    }
+                } catch (InvalidIsolationLevelException e) {
+                    hasException = true;
+                }
+            }
+        }).start();
+    }
 
 }
