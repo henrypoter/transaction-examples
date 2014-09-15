@@ -11,12 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import util.SleepUtil;
 
 @Service
-public class JDBCBookingService {
+public class JdbcBookingService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBookingService.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JDBCBookingService.class);
 
     /**
      * Inserts booking into database.

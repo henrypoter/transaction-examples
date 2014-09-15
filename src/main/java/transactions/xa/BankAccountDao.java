@@ -30,7 +30,7 @@ public class BankAccountDao implements AccountDao {
      */
     @Override
     public long getAllCount() {
-        return (long) entityManager.createQuery("select count(ba.id) from BankAccount ba").getSingleResult();
+        return entityManager.createQuery("select count(ba.id) from BankAccount ba", Long.class).getSingleResult();
     }
 
 }

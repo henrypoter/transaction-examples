@@ -35,7 +35,7 @@ public class InvestmentAccountDao implements AccountDao {
      */
     @Override
     public long getAllCount() {
-        return (long) entityManager.createQuery("select count(ia.id) from InvestmentAccount ia").getSingleResult();
+        return entityManager.createQuery("select count(ia.id) from InvestmentAccount ia", Long.class).getSingleResult();
     }
 
 }

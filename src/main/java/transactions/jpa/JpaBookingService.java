@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import transactions.jpa.entity.Booking;
 
 @Service
-public class JPABookingService {
+public class JpaBookingService {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -89,7 +89,7 @@ public class JPABookingService {
      * @return - the number of bookings.
      */
     public long countAllBookings() {
-        return (long) entityManager.createQuery("select count(b.id) from Booking b").getSingleResult();
+        return entityManager.createQuery("select count(b.id) from Booking b", Long.class).getSingleResult();
 
     }
 
