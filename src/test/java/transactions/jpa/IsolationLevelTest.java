@@ -12,8 +12,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.InvalidIsolationLevelException;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import util.SleepUtil;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:jpa-context.xml"})
 @EnableTransactionManagement
@@ -21,9 +19,9 @@ import util.SleepUtil;
 public class IsolationLevelTest {
 
     @Autowired
-    private JPABookingService bookingService;
+    private JpaBookingService bookingService;
 
-    private boolean hasException;
+    private volatile Boolean hasException;
 
     @Before
     public void before() {
@@ -40,6 +38,9 @@ public class IsolationLevelTest {
     public void givenInsertingWhenMethodWithReadUncommitedIsolationLevelCalledThenExceptionShouldBeThrown() throws InterruptedException {
         startConcurrentCheckerReadUncommited();
         bookingService.insertBookings("User1", "User2", "User3");
+        while (hasException == null)
+            ;
+        System.out.println(hasException);
         Assert.assertTrue(hasException);
     }
 
@@ -47,14 +48,19 @@ public class IsolationLevelTest {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    long size = bookingService.countAllBookingsReadUncommited();
-                    while (size < 3) {
-                        SleepUtil.sleep(100);
-                        size = bookingService.countAllBookingsReadUncommited();
+                synchronized (hasException) {
+                    try {
+                        long size = bookingService.countAllBookingsReadUncommited();
+                        while (size < 3) {
+                            size = bookingService.countAllBookingsReadUncommited();
+                        }
+                    } catch (InvalidIsolationLevelException e) {
+                        hasException = true;
+                    } finally {
+                        if (hasException == null) {
+                            hasException = false;
+                        }
                     }
-                } catch (InvalidIsolationLevelException e) {
-                    hasException = true;
                 }
             }
         }).start();

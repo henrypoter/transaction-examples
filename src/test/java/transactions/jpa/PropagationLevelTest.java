@@ -23,7 +23,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class PropagationLevelTest {
 
     @Autowired
-    private JPABookingService bookingService;
+    private JpaBookingService bookingService;
 
     @Autowired
     private JpaTransactionManager transactionManager;

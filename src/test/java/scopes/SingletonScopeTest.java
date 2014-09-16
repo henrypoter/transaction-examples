@@ -19,11 +19,7 @@ public class SingletonScopeTest {
 
     @Test
     public void givenASingletonBeanDefinitionWhenWrappedInTwoFacadesThenTheWrappedBeansShouldBeIdentical() {
-        Assert.assertEquals(getHashCode(firstSingletonBookingFacade), getHashCode(secondSingletonBookingFacade));
-    }
-
-    private int getHashCode(BookingFacade bookingFacade) {
-        return bookingFacade.getBookingService().hashCode();
+        Assert.assertEquals(firstSingletonBookingFacade.getBookingService(), secondSingletonBookingFacade.getBookingService());
     }
 
 }

@@ -23,7 +23,7 @@ public class IsolationLevelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IsolationLevelTest.class);
 
     @Autowired
-    private JDBCBookingService bookingService;
+    private JdbcBookingService bookingService;
 
     private boolean readUnCommitted;
 

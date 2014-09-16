@@ -19,11 +19,7 @@ public class PrototypeScopeTest {
 
     @Test
     public void givenAProtoypeBeanDefinitionWhenWrappedInTwoFacadesThenTheWrappedBeansShouldNotBeIdentical() {
-        Assert.assertNotEquals(getHashCode(firstSingletonBookingFacade), getHashCode(secondSingletonBookingFacade));
-    }
-
-    private int getHashCode(BookingFacade bookingFacade) {
-        return bookingFacade.getBookingService().hashCode();
+        Assert.assertNotEquals(firstSingletonBookingFacade.getBookingService(), secondSingletonBookingFacade.getBookingService());
     }
 
 }
